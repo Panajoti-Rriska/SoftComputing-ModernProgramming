@@ -17,7 +17,7 @@ namespace backPropagation
         {
             public static double output(double x)
             {
-                return 1.0 / (1.0 + Math.Exp(-x));
+                return 1.00 / (1.00 + Math.Exp(-x));
             }
 
             public static double derivative(double x)
@@ -45,7 +45,7 @@ namespace backPropagation
                 weights[2] = r.NextDouble();
                 weights[3] = r.NextDouble();
 
-                biasWeight = r.NextDouble();
+                biasWeight = 1;
             }
 
             public void adjustWeights()
@@ -59,7 +59,7 @@ namespace backPropagation
             }
             public double output
             {
-                get { return sigmoid.output(weights[0] * inputs[0] + weights[1] * inputs[1]  + weights[2] * inputs[2] + weights[3] * inputs[3] + biasWeight); }
+                get { return sigmoid.output((weights[0] * inputs[0]) + (weights[1] * inputs[1])  + (weights[2] * inputs[2]) + (weights[3] * inputs[3]) + biasWeight); }
             }
 
         }
@@ -81,7 +81,7 @@ namespace backPropagation
                 weights[0] = r.NextDouble();
                 weights[1] = r.NextDouble();
 
-                biasWeight = r.NextDouble();
+                biasWeight = 1;
             }
 
             public void adjustWeights()
@@ -142,11 +142,11 @@ namespace backPropagation
 
 
 
-            int epoch = 0;
+            double epoch = 0;
 
             do
             {
-                epoch++;
+                epoch+= 0.5;
 
                 //4 different patterns
                 for (int i = 0; i < 4; i++)
@@ -163,10 +163,11 @@ namespace backPropagation
                     outputNeuron4.inputs = new double[] { hiddenNeuron1.output, hiddenNeuron2.output };
 
 
-                    Console.WriteLine("{0} = {1} \n {2} = {3} \n {4} = {5}\n {6} = {7} \n", inputs[i, 0],outputNeuron1.output,
-                                                                                                    inputs[i, 1],outputNeuron2.output,
-                                                                                                    inputs[i, 2],outputNeuron3.output,
-                                                                                                    inputs[i, 3],outputNeuron4.output);
+
+                    Console.WriteLine("{0} = {1} \n {2} = {3} \n {4} = {5}\n {6} = {7} \n", inputs[i, 0], outputNeuron1.output,
+                                                                                            inputs[i, 1], outputNeuron2.output,
+                                                                                            inputs[i, 2], outputNeuron3.output,
+                                                                                            inputs[i, 3], outputNeuron4.output);
 
                     // 2) back propagation (adjusts weights)
 
@@ -186,19 +187,18 @@ namespace backPropagation
 
 
                     // then adjusts the hidden neurons' weights, based on their errors
-                    hiddenNeuron1.error = sigmoid.derivative(hiddenNeuron1.output) * outputNeuron1.error * outputNeuron1.weights[0] * 
-                        outputNeuron2.error * outputNeuron2.weights[0] * outputNeuron3.error * outputNeuron3.weights[0] * outputNeuron4.error * outputNeuron4.weights[0]);
+                    hiddenNeuron1.error = sigmoid.derivative(hiddenNeuron1.output) *  (outputNeuron1.error * outputNeuron1.weights[0] + 
+                        outputNeuron2.error * outputNeuron2.weights[0] + outputNeuron3.error * outputNeuron3.weights[0] + outputNeuron4.error * outputNeuron4.weights[0]);
 
-                    hiddenNeuron2.error = sigmoid.derivative(hiddenNeuron2.output) * outputNeuron1.error * outputNeuron1.weights[1] *
-                        outputNeuron2.error * outputNeuron2.weights[1] * outputNeuron3.error * outputNeuron3.weights[1] * outputNeuron4.error * outputNeuron4.weights[1];
+                    hiddenNeuron2.error = sigmoid.derivative(hiddenNeuron2.output) *  (outputNeuron1.error * outputNeuron1.weights[1] +
+                        outputNeuron2.error * outputNeuron2.weights[1] + outputNeuron3.error * outputNeuron3.weights[1] + outputNeuron4.error * outputNeuron4.weights[1]);
 
                     hiddenNeuron1.adjustWeights();
                     hiddenNeuron2.adjustWeights();
-
-                  
+             
                 }
 
-            } while (epoch < 2000);
+            } while (epoch < 500);
 
             Console.ReadLine();
         }
