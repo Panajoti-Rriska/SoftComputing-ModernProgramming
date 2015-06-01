@@ -26,7 +26,7 @@ namespace backPropagation
             }
         }
 
-        class Neuron
+        class hiddenNeuron
         {
 
             //2-2-1 network
@@ -59,7 +59,41 @@ namespace backPropagation
             }
             public double output
             {
-                get { return sigmoid.output(weights[0] * inputs[0] + weights[1] * inputs[1]  + biasWeight); }
+                get { return sigmoid.output(weights[0] * inputs[0] + weights[1] * inputs[1]  + weights[2] * inputs[2] + weights[3] * inputs[3] + biasWeight); }
+            }
+
+        }
+
+        class outputNeuron
+        {
+
+            //2-2-1 network
+            //4-2-4
+            public double[] inputs = new double[2];
+            public double[] weights = new double[2];
+            public double error;
+
+            private double biasWeight;
+
+            private Random r = new Random();
+            public void randomizeWeights()
+            {
+                weights[0] = r.NextDouble();
+                weights[1] = r.NextDouble();
+
+                biasWeight = r.NextDouble();
+            }
+
+            public void adjustWeights()
+            {
+                weights[0] += error * inputs[0];
+                weights[1] += error * inputs[1];
+
+                biasWeight += error;
+            }
+            public double output
+            {
+                get { return sigmoid.output(weights[0] * inputs[0] + weights[1] * inputs[1] + biasWeight); }
             }
 
         }
@@ -86,14 +120,14 @@ namespace backPropagation
             };
 
             //hIDDEN NEURONS
-            Neuron hiddenNeuron1 = new Neuron();
-            Neuron hiddenNeuron2 = new Neuron();
+            hiddenNeuron hiddenNeuron1 = new hiddenNeuron();
+            hiddenNeuron hiddenNeuron2 = new hiddenNeuron();
 
             //Output neurons
-            Neuron outputNeuron1 = new Neuron();
-            Neuron outputNeuron2 = new Neuron();
-            Neuron outputNeuron3 = new Neuron();
-            Neuron outputNeuron4 = new Neuron();
+            outputNeuron outputNeuron1 = new outputNeuron();
+            outputNeuron outputNeuron2 = new outputNeuron();
+            outputNeuron outputNeuron3 = new outputNeuron();
+            outputNeuron outputNeuron4 = new outputNeuron();
 
 
             hiddenNeuron1.randomizeWeights();
@@ -129,7 +163,10 @@ namespace backPropagation
                     outputNeuron4.inputs = new double[] { hiddenNeuron1.output, hiddenNeuron2.output };
 
 
-                    Console.WriteLine("{0} xor {1} = {2}", inputs[i, 0], inputs[i, 1], outputNeuron1.output);
+                    Console.WriteLine("{0} = {1} \n {2} = {3} \n {4} = {5}\n {6} = {7} \n", inputs[i, 0],outputNeuron1.output,
+                                                                                                    inputs[i, 1],outputNeuron2.output,
+                                                                                                    inputs[i, 2],outputNeuron3.output,
+                                                                                                    inputs[i, 3],outputNeuron4.output);
 
                     // 2) back propagation (adjusts weights)
 
@@ -144,13 +181,16 @@ namespace backPropagation
                     outputNeuron3.error = sigmoid.derivative(outputNeuron3.output) * (results[i, 2] - outputNeuron3.output);
                     outputNeuron3.adjustWeights();
 
-                    outputNeuron4.error = sigmoid.derivative(outputNeuron1.output) * (results[i, 3] - outputNeuron4.output);
+                    outputNeuron4.error = sigmoid.derivative(outputNeuron4.output) * (results[i, 3] - outputNeuron4.output);
                     outputNeuron4.adjustWeights();
 
 
                     // then adjusts the hidden neurons' weights, based on their errors
-                    hiddenNeuron1.error = sigmoid.derivative(hiddenNeuron1.output) * outputNeuron1.error * outputNeuron1.weights[0];
-                    hiddenNeuron2.error = sigmoid.derivative(hiddenNeuron2.output) * outputNeuron1.error * outputNeuron1.weights[1];
+                    hiddenNeuron1.error = sigmoid.derivative(hiddenNeuron1.output) * outputNeuron1.error * outputNeuron1.weights[0] * 
+                        outputNeuron2.error * outputNeuron2.weights[0] * outputNeuron3.error * outputNeuron3.weights[0] * outputNeuron4.error * outputNeuron4.weights[0]);
+
+                    hiddenNeuron2.error = sigmoid.derivative(hiddenNeuron2.output) * outputNeuron1.error * outputNeuron1.weights[1] *
+                        outputNeuron2.error * outputNeuron2.weights[1] * outputNeuron3.error * outputNeuron3.weights[1] * outputNeuron4.error * outputNeuron4.weights[1];
 
                     hiddenNeuron1.adjustWeights();
                     hiddenNeuron2.adjustWeights();
