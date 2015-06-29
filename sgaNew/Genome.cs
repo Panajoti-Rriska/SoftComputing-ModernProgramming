@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,38 +9,27 @@ namespace sgaNew
 {
     public class Genome
     {
-        public double[] m_genes;
-        private int m_length;
-        private double m_fitness;
+        public float m_genes;
+        private float m_fitness;
         static Random m_random = new Random();
+        int p = 6, // precision of solution
+            bitsNum;  // number of bits needed to encode the solution
 
-        private static double m_mutationRate;
+        private static float m_mutationRate;
+
         public Genome()
         {
-            //
-            // TODO: Add constructor logic here
-            //
-        }
-        public Genome(int length)
-        {
-            m_length = length;
-            m_genes = new double[length];
             CreateGenes();
         }
-        public Genome(int length, bool createGenes)
+        public Genome(bool createGenes)
         {
-            m_length = length;
-            m_genes = new double[length];
             if (createGenes)
                 CreateGenes();
         }
 
-        public Genome(ref double[] genes)
+        public Genome(ref float genes)
         {
-            m_length = genes.GetLength(0);
-            m_genes = new double[m_length];
-            for (int i = 0; i < m_length; i++)
-                m_genes[i] = genes[i];
+            m_genes = genes;
         }
 
         private void CreateGenes()
@@ -47,66 +37,122 @@ namespace sgaNew
             //range of x's we want from [0.5,2.5]
             var maximum = 2.5;
             var minimum = 0.5;
-            for (int i = 0; i < m_length; i++)
-                m_genes[i] = m_random.NextDouble() * (maximum - minimum) + minimum; ;
+            m_genes = (float)(minimum +( m_random.NextDouble()*(maximum-minimum))) ; 
+        }
+        public int[] Bits { get; set; } // encoded solution
+        private int bitsLenght = 6;
+        public void SwapBit(int index)  // swaps a single bit at specified index
+        {
+            if (Bits[index] == 0)
+                Bits[index] = 1;
+            else
+                Bits[index] = 0;
         }
 
-        public void Crossover(ref Genome genome2, out Genome child1, out Genome child2)
+        public void Crossover(ref Genome parent1,ref Genome parent2,  out Genome child1, out Genome child2)
         {
-            int pos = (int)(m_random.NextDouble() * (double)m_length);
-            child1 = new Genome(m_length, false);
-            child2 = new Genome(m_length, false);
-            for (int i = 0; i < m_length; i++)
+            int pos = (int)(m_random.NextDouble() * bitsLenght);
+            child1 = new Genome(true);
+            child2 = new Genome(true);
+
+            //Conversion from float to bits
+            var bytesParent1 = BitConverter.GetBytes(parent1.m_genes);
+            BitArray bitsParent1 = new BitArray(bytesParent1);
+
+            var bytesParent2 = BitConverter.GetBytes(parent1.m_genes);
+            BitArray bitsParent2 = new BitArray(bytesParent1);
+
+            BitArray childBits1 = new BitArray(bitsLenght);
+            BitArray childBits2 = new BitArray(bitsLenght);
+
+
+            for (int i = 0; i < bitsLenght; i++)
             {
-                if (i < pos)
+                if(pos >= bitsLenght)
                 {
-                    child1.m_genes[i] = m_genes[i];
-                    child2.m_genes[i] = genome2.m_genes[i];
-                }
-                else
+                    childBits1[i] = bitsParent2[i];
+                    childBits2[i] = bitsParent1[i]; 
+
+                }else
                 {
-                    child1.m_genes[i] = genome2.m_genes[i];
-                    child2.m_genes[i] = m_genes[i];
+                    childBits1[i] = bitsParent1[i];
+                    childBits2[i] = bitsParent2[i]; 
                 }
             }
+
+            int[] tempArray = new int[1];
+            int[] tempArray2 = new int[1];
+
+
+            childBits1.CopyTo(tempArray, 0);
+            childBits2.CopyTo(tempArray2, 0);
+
+
+            if((float)tempArray[0] <2.5f && (float)tempArray[0]>0.5f)
+            {
+                child1.m_genes = (float)tempArray[0];
+                child2.m_genes = (float)tempArray2[0];
+            }
+           
+            
+      
+            //Switch bits between childs of given parents
         }
 
         public void Mutate()
         {
-            for (int pos = 0; pos < m_length; pos++)
+            //Switch 0 to 1 bit
+
+            if (m_random.NextDouble() < m_mutationRate)
             {
-                if (m_random.NextDouble() < m_mutationRate)
-                    m_genes[pos] = (m_genes[pos] + m_random.NextDouble()) / 2.0;
+                //Conversion from float to bits
+                var bytesGene = BitConverter.GetBytes(m_genes);
+                BitArray bitsGene = new BitArray(bytesGene);
+
+                int pos = (int)(m_random.NextDouble() * bitsLenght);
+
+                bitsGene[pos] = !bitsGene[pos];
+
+                int[] tempArray = new int[1];
+                //getting our bits to Int
+                bitsGene.CopyTo(tempArray, 0);
+
+                if ((float)tempArray[0] < 2.5f && (float)tempArray[0] > 0.5f)
+                {
+                    m_genes = (float)tempArray[0];
+                }
+
+
             }
+              
         }
 
-        public double[] Genes()
+        public float Genes()
         {
             return m_genes;
         }
 
-        public double GenesValue()
+        public float GenesValue()
         {
-            return m_genes[0];
+            return m_genes;
         }
 
         public void Output()
         {
-            for (int i = 0; i < m_length; i++)
-            {
-                System.Console.WriteLine("{0:F4}", m_genes[i]);
-            }
+
+                System.Console.WriteLine("{0:F4}", m_genes);
+            
             System.Console.Write("\n");
         }
 
-        public void GetValues(ref double[] values)
+        public void GetValues(ref float values)
         {
-            for (int i = 0; i < m_length; i++)
-                values[i] = m_genes[i];
+
+                values = m_genes;
         }
 
         #region Properties
-        public double Fitness
+        public float Fitness
         {
             get
             {
@@ -118,7 +164,7 @@ namespace sgaNew
             }
         }
 
-        public static double MutationRate
+        public static float MutationRate
         {
             get
             {
@@ -130,13 +176,6 @@ namespace sgaNew
             }
         }
 
-        public int Length
-        {
-            get
-            {
-                return m_length;
-            }
-        }
         #endregion 
     }
 }

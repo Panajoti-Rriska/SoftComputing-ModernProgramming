@@ -7,16 +7,16 @@ using System.Collections;
 
 namespace sgaNew
 {
-    public delegate double GeneticAlgorythmFunction(double value);
+    public delegate float GeneticAlgorythmFunction(float value);
 
     public class GeneticAlgorythm
     {
-        private double m_mutationRate;
-        private double m_crossoverRate;
+        private float m_mutationRate;
+        private float m_crossoverRate;
         private int m_populationSize;
         private int m_generationSize;
         private int m_genomeSize;
-        private double m_totalFitness;
+        private float m_totalFitness;
         private string m_strFitness;
         private bool m_elitism;
 
@@ -53,7 +53,7 @@ namespace sgaNew
             }
         }
 
-        public double MutationRate
+        public float MutationRate
         {
             get
             {
@@ -65,7 +65,7 @@ namespace sgaNew
             }
         }
 
-        public double CrossoverRate
+        public float CrossoverRate
         {
             get
             {
@@ -136,15 +136,15 @@ namespace sgaNew
         public GeneticAlgorythm()
         {
             InitialValues();
-            m_mutationRate = 0.03;
-            m_crossoverRate = 0.70;
+            m_mutationRate = 0.03f;
+            m_crossoverRate = 0.70f;
             m_populationSize = 100;
             m_generationSize = 1000;
             m_strFitness = "";
 
         }
 
-        public GeneticAlgorythm(double crossoverRate,double mutationRate, int populationSize, int generationSize, int genomeSize)
+        public GeneticAlgorythm(float crossoverRate,float mutationRate, int populationSize, int generationSize, int genomeSize)
         {
             InitialValues();
             m_mutationRate = mutationRate;
@@ -214,7 +214,7 @@ namespace sgaNew
 
                 if (m_random.NextDouble() < m_crossoverRate)
                 {
-                    parent1.Crossover(ref parent2, out child1, out child2);
+                    parent1.Crossover(ref parent1, ref parent2, out child1, out child2);
                 }
                 else
                 {
@@ -298,25 +298,26 @@ namespace sgaNew
         {
             for (int i = 0; i < m_populationSize; i++)
             {
-                Genome g = new Genome(m_genomeSize);
+                Genome g = new Genome();
                 m_thisGeneration.Add(g);
             }
         }
 
-        public void GetBestValue(out double[] values, out double fitness)
+        public void GetBestValue(out float value, out float fitness)
         {
             Genome g = ((Genome)m_thisGeneration[m_populationSize - 1]);
 
+            /*
             for (int i = 0; i < m_populationSize; i++)
             {
                 Genome gTest = ((Genome)m_thisGeneration[i]);
                 System.Console.WriteLine("{0} x value", gTest.GenesValue());
                 
-            }
+            }*/
 
-            values = new double[g.Length];
-            g.GetValues(ref values);
-            fitness = (double)g.Fitness;
+            value = new float();
+            g.GetValues(ref value);
+            fitness = g.Fitness;
         }
 
     }
